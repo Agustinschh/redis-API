@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Capítulos Mandalorian</title>
+  <link rel="stylesheet" href="{% static 'personajes/estilos.css' %}">
+</head>
+<body>
+
+  <h1>Alquiler de capítulos - The Mandalorian</h1>
+  <p>Trabajo con Redis. Reservás 4 minutos, después confirmás el pago y queda alquilado 24 horas.</p>
+
+  {% if messages %}
+    <ul class="mensajes">
+      {% for m in messages %}
+        <li>{{ m }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <p><b>Nota:</b> disponible = nadie lo tiene. reservado = falta pagar. alquilado = ya está pagado.</p>
+
+  <hr>
+
+  {% for f in filas %}
+    <div class="fila">
+      <p><b>Capítulo {{ f.numero }}</b> (temporada {{ f.temporada }}) — {{ f.titulo }}</p>
+      <p>Estado: <b>{{ f.estado }}</b>
+        {% if f.segundos_restantes %}
+          — faltan {{ f.segundos_restantes }} segundos
+        {% endif %}
+      </p>
+
+      {% if f.estado == "disponible" %}
+        <form method="post" action="{% url 'reservar' f.numero %}">
+          {% csrf_token %}
+          <button type="submit">Reservar</button>
+        </form>
+      {% elif f.estado == "reservado" %}
+        <form method="post" action="{% url 'confirmar_pago' f.numero %}">
+          {% csrf_token %}
+          <label>Precio: <input type="number" name="precio" step="0.01" min="0" required></label>
+          <button type="submit">Confirmar pago</button>
+        </form>
+      {% else %}
+        <p><i>no se puede tocar, está alquilado</i></p>
+      {% endif %}
+
+      <hr>
+    </div>
+  {% endfor %}
+
+  <p><a href="{% url 'api_lista_capitulos' %}">ver JSON</a></p>
+
+</body>
+</html>
