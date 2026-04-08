@@ -1,0 +1,20 @@
+services:
+  db-redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_HOST: db-redis
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,web,0.0.0.0
+    volumes:
+      - .:/app
+    depends_on:
+      - db-redis
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
